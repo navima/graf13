@@ -1,0 +1,10 @@
+Programs/Skeleton/bin/
+Programs/Skeleton/Skeleton/Debug/
+Debug/
+.vs
+*.log
+*.osm
+
+*.cache
+
+*.old

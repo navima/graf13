@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Usage</title>
+        <style>
+</style>
+        
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/markdown.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/highlight.css">
+<style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe WPC', 'Segoe UI', system-ui, 'Ubuntu', 'Droid Sans', sans-serif;
+                font-size: 14px;
+                line-height: 1.6;
+            }
+        </style>
+        <style>
+.task-list-item { list-style-type: none; } .task-list-item-checkbox { margin-left: -20px; vertical-align: middle; }
+</style>
+        
+        
+        
+    </head>
+    <body class="vscode-light">
+        <p>This is an OpenGL/C++ OpenStreetMap .osm XML parser and visualizer.</p>
+<h1 id="usage">Usage</h1>
+<p>After starting the program, write the input file's name into the console. (If a .cache with the same name exists, it is loaded automatically.)</p>
+<p>Use with <a href="https://download.geofabrik.de/">Geofabrik</a> .osm XML files.</p>
+<p>Regular exports from OpenStreetMap won't work (minimal modification needed).</p>
+<h1 id="caching">Caching</h1>
+<p>If a .osm file is input, the program creates a *.osm.cache <em>text</em> file, with minified information.</p>
+<p>When the cache is being generated, roughly 2 * .osm memory is needed.</p>
+<p>This cache is about 1/4th the size of a regular xml, and loads ~10x faster.</p>
+<p>(could be changed to simple binary data dump)</p>
+<h1 id="load-times">Load times</h1>
+<p>The console window should provide info about the opened file.</p>
+<p>Load time is proportional to input.</p>
+<p>For reference: an average desktop loads hungary from cache (0.5G) in ~250s.</p>
+<h1 id="processed-data--visuals">Processed Data / Visuals</h1>
+<p>The 'ways' from the OSM file are drawn as lines.</p>
+<p>The lat/lon coordinates are preserved in the cache, but projected using Mercator Projection for displaying.</p>
+<p>The 'nodes' are substituted into the ways' node references as their coordinates.
+This way only the ways are stored, but currently only they are relevant anyway.</p>
+<p>The <em>type</em> of a way determines what color it is.
+The exact colors are in RGB in the source.</p>
+<p>The 'relations' are discarded (should be used later for large lakes, etc.)</p>
+<h1 id="screenshots">Screenshots</h1>
+<p><img src="file:////Screenshot_3.png" alt="alt"></p>
+
+    </body>
+    </html>
