@@ -6,7 +6,7 @@
 #include <math.h>
 #include <vector>
 
-#include "vectormath.hpp"
+//#include "vectormath.hpp"
 
 #if defined(__APPLE__)
 #include <GLUT/GLUT.h>
