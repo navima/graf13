@@ -26,6 +26,13 @@ int main(int argc, char * argv[]) {
 	// Initialize GLUT, Glew and OpenGL 
 	glutInit(&argc, argv);
 
+
+
+	// Setup CURL global stuff
+	curl_global_init(CURL_GLOBAL_ALL);
+
+
+
 	// OpenGL major and minor versions
 	int majorVersion = 3, minorVersion = 3;
 #if !defined(__APPLE__)
@@ -63,5 +70,11 @@ int main(int argc, char * argv[]) {
 	glutMotionFunc(onMouseMotion);
 
 	glutMainLoop();
+
+
+	// Cleanup CURL global stuff
+	curl_global_cleanup();
+
+
 	return 1;
 }

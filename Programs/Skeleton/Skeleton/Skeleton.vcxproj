@@ -89,14 +89,14 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\..\Libs\glew-1.13.0\include\;$(SolutionDir)..\..\Libs\freeglut\include\;$(SolutionDir)..\..\Libs\devil-1.7.8\include\;$(SolutionDir)..\..\Libs\pugixml-1.10\src;$(SolutionDir)..\..\Libs\glm\;$(SolutionDir)..\..\Common\src\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\..\Libs\glew-1.13.0\include\;$(SolutionDir)..\..\Libs\freeglut\include\;$(SolutionDir)..\..\Libs\devil-1.7.8\include\;$(SolutionDir)..\..\Libs\pugixml-1.10\src;$(SolutionDir)..\..\Libs\glm\;$(SolutionDir)..\..\Common\src\;$(SolutionDir)..\..\Libs\curl-7.73.0\builds\libcurl-vc-x64-release-dll-ipv6-sspi-schannel\include\</AdditionalIncludeDirectories>
       <WarningLevel>Level3</WarningLevel>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)..\..\Libs\freeglut\lib\x64\;$(SolutionDir)..\..\Libs\glew-1.13.0\lib\Release\x64\;$(SolutionDir)..\..\Libs\devil-1.7.8\lib\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>glew32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)..\..\Libs\freeglut\lib\x64\;$(SolutionDir)..\..\Libs\glew-1.13.0\lib\Release\x64\;$(SolutionDir)..\..\Libs\devil-1.7.8\lib\;$(SolutionDir)..\..\Libs\curl-7.73.0\builds\libcurl-vc-x64-release-dll-ipv6-sspi-schannel\lib\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>glew32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;libcurl.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">

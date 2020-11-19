@@ -11,6 +11,12 @@ Use with [Geofabrik](https://download.geofabrik.de/) .osm XML files.
 
 Regular exports from OpenStreetMap won't work (minimal modification needed).
 
+## Controls
+
+* __*Pan*__ with the mouse.
+* __*Zoom*__ with the mousewheel or 'q' and 'e'
+* __*Load things at the center of the screen*__ with 'g'
+
 # Caching
 
 If a .osm file is input, the program creates a *.osm.cache *text* file, with minified information.

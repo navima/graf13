@@ -9,6 +9,9 @@
 #include <iomanip>
 #include <map>
 
+#include "curl/curl.h"
+#include "pugixml.hpp"
+
 #include <chrono>
 
 
@@ -23,7 +26,10 @@ typedef std::pair<long long, NodeStripped> nodemap_entry;
 
 struct Bounds
 {
-	double minlat, maxlat, minlon, maxlon;
+	double minlat = 0.;
+	double maxlat = 0.;
+	double minlon = 0.;
+	double maxlon = 0.;
 
 	Bounds() { ; }
 
@@ -125,7 +131,38 @@ struct MapData
 		}
 		return c;
 	}
+	void merge(MapData& other)
+	{
+		std::cout << getNodeCount() <<" + "<<other.getNodeCount() <<" = ";
+		wayArrs.merge(other.wayArrs);
+		for (auto& wayArr : wayArrs)
+		{
+			// Current EWayType
+			const auto& t = wayArr.first;
+
+			// My underlying vector
+			auto& vec = wayArr.second;
+			
+			// Check if EWayType exists in other
+			const auto iter = other.wayArrs.find(t);
+			if (iter == other.wayArrs.end())
+				break;
+
+			// The other's underlying vector
+			const auto& vec_other = iter->second;
+
+			// Merging
+			vec.insert(vec.end(), vec_other.begin(), vec_other.end());
+		}
+		std::cout << getNodeCount() << "\n";
+	}
 };
 
 
 bool getNodes(const std::string& path, MapData& mapData);
+
+size_t WriteCallback(char* contents, size_t size, size_t nmemb, void* userp);
+
+std::string* getOnlineOSM(const Bounds& bounds);
+
+bool getNodesFromXML(const std::string& xml, MapData& maData);

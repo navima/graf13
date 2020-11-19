@@ -73,11 +73,13 @@ class mapWrapper
 	GLuint* _vao{}; // vertex array object
 	GLuint* _vbo{}; // vertex buffer object
 
-
+public:
 	MapData mapData;
+	std::string userPath = "NOTSET";
+private:
 	std::map<EWayType, std::vector<colored_point>> vertices;
 
-	std::string promptPath()
+	void promptPath()
 	{
 		auto userPath = std::string();
 
@@ -94,21 +96,20 @@ class mapWrapper
 		if (userPath.empty())
 			userPath = "map.osm";
 
-		return userPath;
+		this->userPath = userPath;
 	}
 
 public:
 
 	void create()
 	{
-		// Get input file path --------
-		auto userPath = promptPath();
-
+		// Get Map Path
+		if (userPath == "NOTSET")
+			promptPath();
 
 		// Get Map Data --------
 		if (!getNodes(userPath, mapData))
 			std::cout << "FAILED TO LOAD\n" << "FAILED TO LOAD\n" << "FAILED TO LOAD\n";
-
 
 
 		// Adjust g_camera --------
@@ -125,7 +126,6 @@ public:
 			<< " maxlat: " << mapData.bounds.maxlat
 			<< " minlon: " << mapData.bounds.minlon
 			<< " maxlon: " << mapData.bounds.maxlon << "\n";
-		//std::cout << "Allocating " << sizeof(colored_point) * 2 * mapData.getNodeCount() << "B of memory for verticles\n";
 
 
 		auto initGL = [](GLuint& vao, GLuint& vbo)
@@ -149,15 +149,11 @@ public:
 		std::cout << "Number of buffers: " << mapData.wayArrs.size() << "\n";
 
 
-
-
-
 		for (const auto& wayArr : mapData.wayArrs)
 		{
 			vertices.insert({ wayArr.first, {} });
 			initGL(_vao[wayArr.first], _vbo[wayArr.first]);
 		}
-
 
 
 		compile_vertex_data();
@@ -251,6 +247,7 @@ public:
 				{
 				case EWayType::path:
 					glDrawArrays(GL_PATCHES, 0, baseVector->second.size());
+					break;
 				default:
 					glDrawArrays(GL_LINES, 0, baseVector->second.size());
 					break;
@@ -305,6 +302,26 @@ void onKeyboard(unsigned char key, int pX, int pY)
 	case 'e':
 		g_camera.zoom(0.9f);
 		break;
+	case 'g':
+	{
+		// Remote data acquisition test
+		auto cen = g_camera.center;
+		double xd = x2lon_m(cen.x);
+		double yd = y2lat_m(cen.y);
+		double x = std::round(xd * 100.) / 100.;
+		double y = std::round(yd * 100.) / 100.;
+		Bounds bs = Bounds(y - 0.005, y + 0.005, x - 0.005, x + 0.005);
+		auto data = getOnlineOSM(bs);
+		auto md = MapData();
+		getNodesFromXML(*data, md);
+		md.bounds = bs;
+		g_nodeWrapper.mapData.merge(md);
+
+		g_nodeWrapper.compile_vertex_data();
+		g_nodeWrapper.draw();
+
+		break;
+	}
 	}
 	glutPostRedisplay();
 }

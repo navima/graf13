@@ -6,6 +6,10 @@
 #include <math.h>
 #include <vector>
 
+#include "curl/curl.h"
+
+//#pragma comment(lib, "lib/libcurl.lib")
+
 //#include "vectormath.hpp"
 
 #if defined(__APPLE__)
@@ -252,7 +256,7 @@ class GPUProgram {
 			char * log = new char[logLen];
 			glGetShaderInfoLog(handle, logLen, &written, log);
 			printf("Shader log:\n%s", log);
-			delete log;
+			delete[] log;
 		}
 	}
 	void checkShader(unsigned int shader, char * message) { 	// check if shader could be compiled

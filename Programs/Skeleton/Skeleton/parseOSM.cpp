@@ -1,5 +1,5 @@
 #include "parseOSM.hpp"
-#include <filesystem>
+#define _CRT_SECURE_NO_WARNINGS
 
 
 // Extract data from osm xml
@@ -66,7 +66,7 @@ bool getNodes(const std::string& path, MapData& mapData)
 			double lon = 0;
 			long long id = 0;
 
-			success = 0 < sscanf(instr, " <node id=\"%lli\" %*s %*s lat=\"%lf\" lon=\"%lf", &id, &lat, &lon);
+			success = 0 < sscanf_s(instr, " <node id=\"%lli\" %*s %*s lat=\"%lf\" lon=\"%lf", &id, &lat, &lon);
 
 			if (success)
 				//we found a node
@@ -90,10 +90,10 @@ bool getNodes(const std::string& path, MapData& mapData)
 		}
 		else
 		{
-			char attr_name[300];
-			char attr_val[300];
+			char attr_name[300]{};
+			char attr_val[300]{};
 
-			success = 0 < sscanf(instr, "  <tag k=\"%[^\"]\" v=\"%[^\"]", &attr_name, &attr_val);
+			success = 1 < sscanf_s(instr, "  <tag k=\"%[^\"]\" v=\"%[^\"]", &attr_name, std::size(attr_name), &attr_val, std::size(attr_val));
 
 			if (success)
 			{
@@ -110,24 +110,6 @@ bool getNodes(const std::string& path, MapData& mapData)
 					if (getTypeIter != attr_name_to_EWayType.end())
 						wayType = getTypeIter->second;
 				}
-				/*
-				if (sattr_name == "building")
-				{
-					way.type = Way::EType::building;
-				}
-				else if (sattr_name == "boundary")
-				{
-					way.type = Way::EType::boundary;
-				}
-				else if (sattr_name == "highway")
-				{
-					way.type = Way::EType::route_highway;
-				}
-				else if (sattr_name == "railway")
-				{
-					way.type = Way::EType::route_railway;
-				}
-				*/
 			}
 
 			return success;
@@ -172,10 +154,10 @@ bool getNodes(const std::string& path, MapData& mapData)
 	{
 		if (isCached)
 		{
-			char name[50];
+			char name[50]{};
 			int type;
 
-			bool success = 0 < sscanf(instr, "w %s %i", &name, &type);
+			bool success = 0 < sscanf_s(instr, "w %s %i", name, std::size(name), &type);
 
 			if (success)
 			{
@@ -225,8 +207,8 @@ bool getNodes(const std::string& path, MapData& mapData)
 			;
 		else if (pushRef(instr))
 			;
-		else if (pushWay(instr))
-			;
+		else 
+			pushWay(instr);
 	}
 
 
@@ -243,6 +225,7 @@ bool getNodes(const std::string& path, MapData& mapData)
 	std::cout << "Found: " << mapData.getNodeCount() << " Nodes, " << mapData.getWayCount() << " Ways\n";
 
 
+	// Generate cache
 	if (!isCached)
 	{
 		std::cout << "Now writing cache to " << path + ".cache" << "\n";
@@ -260,7 +243,7 @@ bool getNodes(const std::string& path, MapData& mapData)
 		{
 			for (const auto& way2 : wayArr.second)
 			{
-				filestream2 << "w " << way2.name << " " << wayArr.first << "\n";
+				filestream2 << "w " << way2.name << " " << (int)wayArr.first << "\n";
 				for (const auto& attr2 : way2.nodes)
 					filestream2 << "t " 
 					<< std::setprecision(9) << attr2.lat << " " 
@@ -272,4 +255,131 @@ bool getNodes(const std::string& path, MapData& mapData)
 
 
 	return true;
+}
+
+bool getNodesFromXML(const std::string& xml, MapData& mapData) 
+{
+	pugi::xml_document doc;
+	doc.load_string(xml.c_str());
+
+	auto e_osm = doc.child("osm");
+	auto e_node = e_osm.first_child();
+
+	nodemap nodes;
+	waymap ways;
+
+
+	// Process nodes
+	for (const auto& i : e_osm.children("node"))
+		nodes.insert(nodemap_entry{ atoll(i.attribute("id").value()), NodeStripped{atof(i.attribute("lat").value()),atof(i.attribute("lon").value())} });
+
+	// Process ways
+	for (const auto& e_way : e_osm.children("way"))
+	{
+		Way way;
+		EWayType wayType = defaultt;
+		
+		// Fill the Way nodes
+		for (const auto& e_nd : e_way.children("nd"))
+		{
+			long long refd_node = atoll(e_nd.attribute("ref").value());
+
+			auto iter = nodes.find(refd_node);
+			if (iter != nodes.end())
+				way.nodes.push_back(iter->second);
+		}
+
+		// Get WayType
+		for (const auto& e_tag : e_way.children("tag"))
+		{
+			std::string sattr_name = e_tag.attribute("k").value();
+			std::string sattr_val = e_tag.attribute("v").value();
+
+			auto getTypeIter = attr_val_to_EWayType.find(sattr_val);
+			if (getTypeIter != attr_val_to_EWayType.end())
+			{
+				wayType = getTypeIter->second;
+				break;
+			}
+			else
+			{
+				auto getTypeIter = attr_name_to_EWayType.find(sattr_name);
+				if (getTypeIter != attr_name_to_EWayType.end())
+				{
+					wayType = getTypeIter->second;
+					break;
+				}
+			}
+		}
+
+		mapData.push_back(wayType, way);
+	}
+
+
+	std::cout << "Parsed " << mapData.getNodeCount() << " nodes from received XML\n";
+
+	return true;
+}
+
+std::string* getOnlineOSM(const Bounds& bounds)
+{
+	auto map = new MapData();
+
+	map->bounds = bounds;
+
+
+	char request[300]{};
+
+	sprintf(request, R"(data=<union>
+						  <bbox-query s="%f" w="%f" n="%f" e="%f"/>
+						  <recurse type="up"/>
+						</union>
+						<print/>)", bounds.minlat, bounds.minlon, bounds.maxlat, bounds.maxlon);
+
+
+	CURL* curl;
+	CURLcode res;
+
+	std::string* readBuffer = new std::string;
+
+	/* get a curl handle */
+	curl = curl_easy_init();
+	if (curl) {
+		/* First set the URL that is about to receive our POST. This URL can
+		   just as well be a https:// URL if that is what should receive the
+		   data. */
+		curl_easy_setopt(curl, CURLOPT_URL, "https://lz4.overpass-api.de/api/interpreter");
+		/* Now specify the POST data */
+		curl_easy_setopt(curl, CURLOPT_POSTFIELDS, request);/* R"(data=<union>
+															  <bbox-query s="47.230" w="9.595" n="47.238" e="9.605"/>
+															  <recurse type="up"/>
+															</union>
+															<print/>)");*/
+
+
+		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
+		curl_easy_setopt(curl, CURLOPT_WRITEDATA, readBuffer);
+
+
+		/* Perform the request, res will get the return code */
+		res = curl_easy_perform(curl);
+		/* Check for errors */
+		if (res != CURLE_OK)
+			fprintf(stderr, "curl_easy_perform() failed: %s\n",
+				curl_easy_strerror(res));
+
+		//std::cout << *readBuffer << std::endl;
+
+		/* always cleanup */
+		curl_easy_cleanup(curl);
+	}
+
+
+	return readBuffer;
+}
+
+size_t WriteCallback(char* contents, size_t size, size_t nmemb, void* userp)
+{
+	((std::string*)userp)->append((char*)contents, size * nmemb);
+	return size * nmemb;
 }
