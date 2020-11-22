@@ -277,6 +277,7 @@ bool getNodesFromXML(const std::string& xml, MapData& mapData)
 	for (const auto& e_way : e_osm.children("way"))
 	{
 		Way way;
+		way.name = "Q";
 		EWayType wayType = defaultt;
 		
 		// Fill the Way nodes
@@ -317,6 +318,9 @@ bool getNodesFromXML(const std::string& xml, MapData& mapData)
 
 
 	std::cout << "Parsed " << mapData.getNodeCount() << " nodes from received XML\n";
+	std::cout << "       " << mapData.getWayCount() << " ways\n";
+	std::cout << "       " << mapData.getNodeCount(EWayType::boundary) << " boundary nodes\n";
+
 
 	return true;
 }

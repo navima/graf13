@@ -146,7 +146,7 @@ struct MapData
 			// Check if EWayType exists in other
 			const auto iter = other.wayArrs.find(t);
 			if (iter == other.wayArrs.end())
-				break;
+				continue;
 
 			// The other's underlying vector
 			const auto& vec_other = iter->second;

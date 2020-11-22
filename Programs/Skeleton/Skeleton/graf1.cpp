@@ -246,7 +246,7 @@ public:
 				switch (vert.first)
 				{
 				case EWayType::path:
-					glDrawArrays(GL_PATCHES, 0, baseVector->second.size());
+					glDrawArrays(GL_LINES, 0, baseVector->second.size());
 					break;
 				default:
 					glDrawArrays(GL_LINES, 0, baseVector->second.size());
@@ -347,7 +347,7 @@ void onMouse(int button, int state, int pX, int pY)
 	const auto cX = 2.0f * pX / windowWidth - 1; // flip y axis
 	const auto cY = 1.0f - 2.0f * pY / windowHeight;
 
-	std::cout << button;
+	//std::cout << button;
 
 	if (button == GLUT_LEFT_BUTTON)
 	{
