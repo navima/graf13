@@ -3,7 +3,6 @@ extern "C"
 {
 #endif
 
-#pragma once
 // https://wiki.openstreetmap.org/wiki/Mercator#C
 
 

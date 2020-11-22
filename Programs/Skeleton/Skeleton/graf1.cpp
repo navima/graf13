@@ -87,8 +87,8 @@ private:
 		std::cout << ".osm files in current folder:\n";
 
 		for (const auto& elem : dsa)
-			if (dsa->path().extension() == ".osm")
-				std::cout << dsa->path().filename() << "\n";
+			if (elem.path().extension() == ".osm")
+				std::cout << elem.path().filename() << "\n";
 
 		std::cout << "file to load (default map.osm): ";
 		std::cin >> userPath;
@@ -152,7 +152,7 @@ public:
 		for (const auto& wayArr : mapData.wayArrs)
 		{
 			vertices.insert({ wayArr.first, {} });
-			initGL(_vao[wayArr.first], _vbo[wayArr.first]);
+			initGL(_vao[(int)wayArr.first], _vbo[(int)wayArr.first]);
 		}
 
 
@@ -196,6 +196,7 @@ public:
 			case EWayType::defaultt:
 				wayColour = { .2f, .2f, .2f };
 				break;
+			default: wayColour = { 1.f, 0.f, 0.f };
 			}
 
 			auto findIter = vertices.find(wayArr.first);
@@ -222,9 +223,9 @@ public:
 
 				auto baseVector = vertices.find(wayArr.first)->second;
 
-				std::cout << "Writing " << sizeof(colored_point) << " * " << baseVector.size() << " = " << sizeof(colored_point) * baseVector.size() / 1024 << " kB to Buffer " << _vbo[wayArr.first] << "\n";
+				std::cout << "Writing " << sizeof(colored_point) << " * " << baseVector.size() << " = " << sizeof(colored_point) * baseVector.size() / 1024 << " kB to Buffer " << _vbo[(int)wayArr.first] << "\n";
 
-				glBindBuffer(GL_ARRAY_BUFFER, _vbo[wayArr.first]);
+				glBindBuffer(GL_ARRAY_BUFFER, _vbo[(int)wayArr.first]);
 				glBufferData(GL_ARRAY_BUFFER, sizeof(colored_point) * baseVector.size(), baseVector.data(), GL_DYNAMIC_DRAW);
 			}
 		}
@@ -242,14 +243,14 @@ public:
 			auto baseVector = vertices.find(vert.first);
 			if (baseVector != vertices.end())
 			{
-				glBindVertexArray(_vao[vert.first]);
+				glBindVertexArray(_vao[(int)vert.first]);
 				switch (vert.first)
 				{
 				case EWayType::path:
-					glDrawArrays(GL_LINES, 0, baseVector->second.size());
+					glDrawArrays(GL_LINES, 0, (GLsizei)baseVector->second.size());
 					break;
 				default:
-					glDrawArrays(GL_LINES, 0, baseVector->second.size());
+					glDrawArrays(GL_LINES, 0, (GLsizei)baseVector->second.size());
 					break;
 				}
 			}
@@ -267,7 +268,7 @@ void onInitialization()
 
 	// create objects by setting up their vertex data on the GPU
 	g_nodeWrapper.create();
-	GLenum asd = glGetError();
+	//GLenum asd = glGetError();
 
 	// create program for the GPU
 	g_fragment_colored_program.Create(k_fragment_colored_vertex_source, k_fragment_colored_fragment_source, "fragmentColor");

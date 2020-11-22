@@ -29,7 +29,7 @@ bool getNodes(const std::string& path, MapData& mapData)
 	// Get bounds --------
 	bool searchBounds = true;
 	while (searchBounds)
-		if (0 < sscanf(instr, " <bounds minlat=\"%lf\" minlon=\"%lf\" maxlat=\"%lf\" maxlon=\"%lf",
+		if (0 < sscanf_s(instr, R"( <bounds minlat="%lf" minlon="%lf" maxlat="%lf" maxlon="%lf)",
 			&mapData.bounds.minlat,
 			&mapData.bounds.minlon,
 			&mapData.bounds.maxlat,
@@ -80,7 +80,7 @@ bool getNodes(const std::string& path, MapData& mapData)
 		}
 
 	};
-	auto pushTag = [&way, &isCached, &wayType](const char* instr)
+	auto pushTag = [&isCached, &wayType](const char* instr)
 	{
 		bool success;
 
@@ -93,7 +93,7 @@ bool getNodes(const std::string& path, MapData& mapData)
 			char attr_name[300]{};
 			char attr_val[300]{};
 
-			success = 1 < sscanf_s(instr, "  <tag k=\"%[^\"]\" v=\"%[^\"]", &attr_name, std::size(attr_name), &attr_val, std::size(attr_val));
+			success = 1 < sscanf_s(instr, "  <tag k=\"%[^\"]\" v=\"%[^\"]", &attr_name, (unsigned int)std::size(attr_name), &attr_val, (unsigned int)std::size(attr_val));
 
 			if (success)
 			{
@@ -123,7 +123,7 @@ bool getNodes(const std::string& path, MapData& mapData)
 			double lat = 0;
 			double lon = 0;
 
-			bool success = 0 < sscanf(instr, "t %lf %lf", &lat, &lon);
+			bool success = 0 < sscanf_s(instr, "t %lf %lf", &lat, &lon);
 
 			if (success)
 			{
@@ -135,7 +135,7 @@ bool getNodes(const std::string& path, MapData& mapData)
 		{
 			long long id_ref = 0;
 
-			bool success = 0 < sscanf(instr, "  <nd ref=\"%lli", &id_ref);
+			bool success = 0 < sscanf_s(instr, "  <nd ref=\"%lli", &id_ref);
 
 			if (success)
 			{
@@ -157,7 +157,7 @@ bool getNodes(const std::string& path, MapData& mapData)
 			char name[50]{};
 			int type;
 
-			bool success = 0 < sscanf_s(instr, "w %s %i", name, std::size(name), &type);
+			bool success = 0 < sscanf_s(instr, "w %s %i", name, (unsigned int)std::size(name), &type);
 
 			if (success)
 			{
@@ -173,14 +173,14 @@ bool getNodes(const std::string& path, MapData& mapData)
 		else
 		{
 			char garbage;
-			bool success = 0 < sscanf(instr, " <w%c", &garbage);
+			bool success = 0 < sscanf_s(instr, " <w%c", &garbage, 1);
 
 			if (success)
 			{
 				//we found a way
 				mapData.push_back(wayType, way);
 				way = Way();
-				wayType = defaultt;
+				wayType = EWayType::defaultt;
 			}
 
 			return success;
@@ -192,15 +192,11 @@ bool getNodes(const std::string& path, MapData& mapData)
 
 	while (filestream)
 	{
-		float lat = 0;
-		float lon = 0;
-
 		filestream.getline(instr, sizeof(instr));
 
 		if (filestream.gcount() == (sizeof(instr) - 1))
 			filestream.clear();
 
-		// Exported:               " <node id=\"%lli\" %*s %*s %*s %*s %*s %*s lat=\"%f\" lon=\"%f\""
 		if (pushNode(instr))
 			;
 		else if (pushTag(instr))
@@ -263,7 +259,6 @@ bool getNodesFromXML(const std::string& xml, MapData& mapData)
 	doc.load_string(xml.c_str());
 
 	auto e_osm = doc.child("osm");
-	auto e_node = e_osm.first_child();
 
 	nodemap nodes;
 	waymap ways;
@@ -278,7 +273,7 @@ bool getNodesFromXML(const std::string& xml, MapData& mapData)
 	{
 		Way way;
 		way.name = "Q";
-		EWayType wayType = defaultt;
+		EWayType wayType = EWayType::defaultt;
 		
 		// Fill the Way nodes
 		for (const auto& e_nd : e_way.children("nd"))
@@ -327,14 +322,9 @@ bool getNodesFromXML(const std::string& xml, MapData& mapData)
 
 std::string* getOnlineOSM(const Bounds& bounds)
 {
-	auto map = new MapData();
-
-	map->bounds = bounds;
-
-
 	char request[300]{};
 
-	sprintf(request, 
+	sprintf_s(request, std::size(request),
 R"(data=<union>
   <bbox-query s="%f" w="%f" n="%f" e="%f"/>
   <recurse type="node-way"/>
@@ -370,7 +360,6 @@ R"(data=<union>
 			fprintf(stderr, "curl_easy_perform() failed: %s\n",
 				curl_easy_strerror(res));
 
-		//std::cout << *readBuffer << std::endl;
 
 		/* always cleanup */
 		curl_easy_cleanup(curl);

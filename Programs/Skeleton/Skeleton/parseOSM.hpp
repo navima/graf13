@@ -21,8 +21,8 @@ struct NodeStripped
 	double lon;
 };
 
-typedef std::unordered_map < long long, NodeStripped > nodemap;
-typedef std::pair<long long, NodeStripped> nodemap_entry;
+using nodemap = std::unordered_map < long long, NodeStripped >;
+using nodemap_entry = std::pair<long long, NodeStripped>;
 
 struct Bounds
 {
@@ -46,7 +46,7 @@ struct Way
 };
 
 
-enum EWayType : int
+enum class EWayType : int
 {
 	defaultt = 0,
 	building = 1,
@@ -93,8 +93,8 @@ const std::unordered_map<std::string, EWayType> attr_name_to_EWayType({
 
 
 struct MapData;
-typedef std::map<EWayType, std::vector<Way>> waymap;
-typedef std::pair<EWayType, std::vector<Way>> waymap_entry;
+using waymap = std::map<EWayType, std::vector<Way>>;
+using waymap_entry = std::pair<EWayType, std::vector<Way>>;
 
 struct MapData
 {
@@ -109,22 +109,22 @@ struct MapData
 		else
 			wayArrs.insert({ type, { way } });
 	};
-	unsigned long getNodeCount(const EWayType& type)
+	size_t getNodeCount(const EWayType& type)
 	{
-		unsigned long c = 0;
+		size_t c = 0;
 		for (const auto& way : wayArrs.find(type)->second)
 			c += way.nodes.size();
 		return c;
 	};
-	unsigned long getNodeCount() {
-		unsigned long c = 0;
+	size_t getNodeCount() {
+		size_t c = 0;
 		for (const auto& wayEntry : wayArrs)
 			c += getNodeCount(wayEntry.first);
 		return c;
 	};
-	unsigned long getWayCount()
+	size_t getWayCount()
 	{
-		unsigned long c = 0;
+		size_t c = 0;
 		for (const auto& wayEntry : wayArrs)
 		{
 			c += wayEntry.second.size();
