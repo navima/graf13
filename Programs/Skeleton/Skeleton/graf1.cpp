@@ -322,6 +322,13 @@ void onKeyboard(unsigned char key, int pX, int pY)
 
 		break;
 	}
+	case 'f':
+	{
+		float lat, lon;
+		std::cin >> lat >> lon;
+		g_camera.center = { (float)lon2x_m(lon), (float)lat2y_m(lat) };
+		break;
+	}
 	}
 	glutPostRedisplay();
 }

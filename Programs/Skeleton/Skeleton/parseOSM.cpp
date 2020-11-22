@@ -319,7 +319,7 @@ bool getNodesFromXML(const std::string& xml, MapData& mapData)
 
 	std::cout << "Parsed " << mapData.getNodeCount() << " nodes from received XML\n";
 	std::cout << "       " << mapData.getWayCount() << " ways\n";
-	std::cout << "       " << mapData.getNodeCount(EWayType::boundary) << " boundary nodes\n";
+	//std::cout << "       " << mapData.getNodeCount(EWayType::boundary) << " boundary nodes\n";
 
 
 	return true;
@@ -334,12 +334,14 @@ std::string* getOnlineOSM(const Bounds& bounds)
 
 	char request[300]{};
 
-	sprintf(request, R"(data=<union>
-						  <bbox-query s="%f" w="%f" n="%f" e="%f"/>
-						  <recurse type="up"/>
-						</union>
-						<print/>)", bounds.minlat, bounds.minlon, bounds.maxlat, bounds.maxlon);
+	sprintf(request, 
+R"(data=<union>
+  <bbox-query s="%f" w="%f" n="%f" e="%f"/>
+  <recurse type="node-way"/>
+</union>
+<print/>)", bounds.minlat, bounds.minlon, bounds.maxlat, bounds.maxlon);
 
+	std::cout << "\n---------------------\n" << request << "\n-----------------------\n";
 
 	CURL* curl;
 	CURLcode res;
@@ -354,11 +356,7 @@ std::string* getOnlineOSM(const Bounds& bounds)
 		   data. */
 		curl_easy_setopt(curl, CURLOPT_URL, "https://lz4.overpass-api.de/api/interpreter");
 		/* Now specify the POST data */
-		curl_easy_setopt(curl, CURLOPT_POSTFIELDS, request);/* R"(data=<union>
-															  <bbox-query s="47.230" w="9.595" n="47.238" e="9.605"/>
-															  <recurse type="up"/>
-															</union>
-															<print/>)");*/
+		curl_easy_setopt(curl, CURLOPT_POSTFIELDS, request);
 
 
 		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
@@ -376,6 +374,8 @@ std::string* getOnlineOSM(const Bounds& bounds)
 
 		/* always cleanup */
 		curl_easy_cleanup(curl);
+
+		std::cout << "\n---------------------\n" << readBuffer->substr(0,500) << "\n-----------------------\n";
 	}
 
 
